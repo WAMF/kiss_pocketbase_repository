@@ -1,12 +1,13 @@
 import 'package:pocketbase/pocketbase.dart';
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
 
-import 'test_data.dart';
+import '../../../kiss_repository/test/data/test_object.dart';
+import '../../../kiss_repository/test/data/queries.dart';
 
 class IntegrationTestHelpers {
   static late PocketBase pocketbaseClient;
-  static late RepositoryPocketBase<TestUser> repository;
-  static const String testCollection = 'test_users';
+  static late RepositoryPocketBase<TestObject> repository;
+  static const String testCollection = 'test_objects';
   static const String pocketbaseUrl = 'http://localhost:8090';
 
   static const String testUserEmail = 'testuser@example.com';
@@ -16,9 +17,7 @@ class IntegrationTestHelpers {
     pocketbaseClient = PocketBase(pocketbaseUrl);
 
     try {
-      await pocketbaseClient
-          .collection('users')
-          .authWithPassword(testUserEmail, testUserPassword);
+      await pocketbaseClient.collection('users').authWithPassword(testUserEmail, testUserPassword);
       print('🔐 Authenticated as test user: $testUserEmail');
     } catch (e) {
       throw Exception(
@@ -28,20 +27,22 @@ class IntegrationTestHelpers {
       );
     }
 
-    repository = RepositoryPocketBase<TestUser>(
+    repository = RepositoryPocketBase<TestObject>(
       client: pocketbaseClient,
       collection: testCollection,
-      fromPocketBase: (record) => TestUser.fromMap(record.data),
-      toPocketBase: (user) => user.toMap(),
-      queryBuilder: TestUserQueryBuilder(),
+      fromPocketBase: (record) => TestObject(
+        id: record.id,
+        name: record.data['name'] as String,
+        created: DateTime.parse(record.data['created'] as String),
+      ),
+      toPocketBase: (testObject) => {'name': testObject.name, 'created': testObject.created.toIso8601String()},
+      queryBuilder: TestObjectQueryBuilder(),
     );
   }
 
   static Future<void> clearTestCollection() async {
     try {
-      final records = await pocketbaseClient
-          .collection(testCollection)
-          .getFullList();
+      final records = await pocketbaseClient.collection(testCollection).getFullList();
 
       for (final record in records) {
         await pocketbaseClient.collection(testCollection).delete(record.id);
@@ -64,7 +65,7 @@ class IntegrationTestHelpers {
     } catch (e) {
       throw Exception(
         'Failed to connect to PocketBase. Make sure it\'s running at $pocketbaseUrl\n'
-        'Run: ./packages/kiss_pocketbase_repository/scripts/setup_test_collection_and_user.sh\n'
+        'Run: ./scripts/setup_test_collection_and_user.sh\n'
         'Error: $e',
       );
     }
