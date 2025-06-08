@@ -1,9 +1,8 @@
 import 'package:test/test.dart';
-import 'package:kiss_repository/kiss_repository.dart';
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
 
 import 'test_helpers.dart';
-import 'test_data.dart';
+import '../../../kiss_repository/test/data/test_object.dart';
 
 void main() {
   group('PocketBase ID Validation', () {
@@ -49,56 +48,26 @@ void main() {
         // Invalid IDs - wrong length
         expect(PocketBaseUtils.isValidId(''), isFalse);
         expect(PocketBaseUtils.isValidId('short'), isFalse);
-        expect(
-          PocketBaseUtils.isValidId('abc123def45678'),
-          isFalse,
-        ); // 14 chars
-        expect(
-          PocketBaseUtils.isValidId('abc123def4567890'),
-          isFalse,
-        ); // 16 chars
+        expect(PocketBaseUtils.isValidId('abc123def45678'), isFalse); // 14 chars
+        expect(PocketBaseUtils.isValidId('abc123def4567890'), isFalse); // 16 chars
 
         // Invalid IDs - wrong characters
-        expect(
-          PocketBaseUtils.isValidId('ABC123def456789'),
-          isFalse,
-        ); // uppercase
-        expect(
-          PocketBaseUtils.isValidId('abc123def456789!'),
-          isFalse,
-        ); // special char
-        expect(
-          PocketBaseUtils.isValidId('abc123def456789_'),
-          isFalse,
-        ); // underscore
-        expect(
-          PocketBaseUtils.isValidId('abc123def456789-'),
-          isFalse,
-        ); // hyphen
+        expect(PocketBaseUtils.isValidId('ABC123def456789'), isFalse); // uppercase
+        expect(PocketBaseUtils.isValidId('abc123def456789!'), isFalse); // special char
+        expect(PocketBaseUtils.isValidId('abc123def456789_'), isFalse); // underscore
+        expect(PocketBaseUtils.isValidId('abc123def456789-'), isFalse); // hyphen
         expect(PocketBaseUtils.isValidId('abc123def456 789'), isFalse); // space
       });
 
       test('should throw exception for invalid IDs', () {
-        expect(
-          () => PocketBaseUtils.validateId('invalid'),
-          throwsA(isA<RepositoryException>()),
-        );
+        expect(() => PocketBaseUtils.validateId('invalid'), throwsA(isA<RepositoryException>()));
 
-        expect(
-          () => PocketBaseUtils.validateId('ABC123def456789'),
-          throwsA(isA<RepositoryException>()),
-        );
+        expect(() => PocketBaseUtils.validateId('ABC123def456789'), throwsA(isA<RepositoryException>()));
 
-        expect(
-          () => PocketBaseUtils.validateId('abc123def456789!'),
-          throwsA(isA<RepositoryException>()),
-        );
+        expect(() => PocketBaseUtils.validateId('abc123def456789!'), throwsA(isA<RepositoryException>()));
 
         // Should not throw for valid IDs
-        expect(
-          () => PocketBaseUtils.validateId('abc123def456789'),
-          returnsNormally,
-        );
+        expect(() => PocketBaseUtils.validateId('abc123def456789'), returnsNormally);
       });
     });
 
@@ -106,11 +75,7 @@ void main() {
       test('should reject invalid IDs when adding items', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testUser = TestUser.create(
-          name: 'Test User',
-          age: 25,
-          created: DateTime.now(),
-        );
+        final testObject = TestObject.create(name: 'Test Object', created: DateTime.now());
 
         // Test various invalid ID formats
         final invalidIds = [
@@ -127,7 +92,7 @@ void main() {
 
         for (final invalidId in invalidIds) {
           expect(
-            () => repository.add(IdentifiedObject(invalidId, testUser)),
+            () => repository.add(IdentifiedObject(invalidId, testObject.copyWith(id: invalidId))),
             throwsA(isA<RepositoryException>()),
             reason: 'Should reject invalid ID: "$invalidId"',
           );
@@ -137,11 +102,7 @@ void main() {
       test('should accept valid IDs when adding items', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testUser = TestUser.create(
-          name: 'Test User',
-          age: 25,
-          created: DateTime.now(),
-        );
+        final testObject = TestObject.create(name: 'Test Object', created: DateTime.now());
 
         // Test valid ID formats
         final validIds = [
@@ -153,11 +114,9 @@ void main() {
         ];
 
         for (final validId in validIds) {
-          final result = await repository.add(
-            IdentifiedObject(validId, testUser.copyWith(id: validId)),
-          );
+          final result = await repository.add(IdentifiedObject(validId, testObject.copyWith(id: validId)));
           expect(result.id, equals(validId));
-          expect(result.name, equals('Test User'));
+          expect(result.name, equals('Test Object'));
 
           // Clean up for next iteration
           await repository.delete(validId);
@@ -167,44 +126,37 @@ void main() {
       test('should validate IDs in batch operations', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testUsers = [
-          TestUser.create(name: 'User 1', age: 25, created: DateTime.now()),
-          TestUser.create(name: 'User 2', age: 30, created: DateTime.now()),
-          TestUser.create(name: 'User 3', age: 35, created: DateTime.now()),
+        final testObjects = [
+          TestObject.create(name: 'Object 1', created: DateTime.now()),
+          TestObject.create(name: 'Object 2', created: DateTime.now()),
+          TestObject.create(name: 'Object 3', created: DateTime.now()),
         ];
 
         // Mix of valid and invalid IDs
-        final identifiedUsers = [
-          IdentifiedObject(PocketBaseUtils.generateId(), testUsers[0]), // valid
-          IdentifiedObject('invalid_id', testUsers[1]), // invalid
-          IdentifiedObject(PocketBaseUtils.generateId(), testUsers[2]), // valid
+        final identifiedObjects = [
+          IdentifiedObject(
+            PocketBaseUtils.generateId(),
+            testObjects[0].copyWith(id: PocketBaseUtils.generateId()),
+          ), // valid
+          IdentifiedObject('invalid_id', testObjects[1].copyWith(id: 'invalid_id')), // invalid
+          IdentifiedObject(
+            PocketBaseUtils.generateId(),
+            testObjects[2].copyWith(id: PocketBaseUtils.generateId()),
+          ), // valid
         ];
 
         // Batch add should fail due to invalid ID
-        expect(
-          () => repository.addAll(identifiedUsers),
-          throwsA(isA<RepositoryException>()),
-        );
+        expect(() => repository.addAll(identifiedObjects), throwsA(isA<RepositoryException>()));
 
-        // Verify no users were created (all-or-nothing behavior)
-        expect(
-          () => repository.get(identifiedUsers[0].id),
-          throwsA(isA<RepositoryException>()),
-        );
-        expect(
-          () => repository.get(identifiedUsers[2].id),
-          throwsA(isA<RepositoryException>()),
-        );
+        // Verify no objects were created (all-or-nothing behavior)
+        expect(() => repository.get(identifiedObjects[0].id), throwsA(isA<RepositoryException>()));
+        expect(() => repository.get(identifiedObjects[2].id), throwsA(isA<RepositoryException>()));
       });
 
       test('should handle edge cases in ID validation', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testUser = TestUser.create(
-          name: 'Test User',
-          age: 25,
-          created: DateTime.now(),
-        );
+        final testObject = TestObject.create(name: 'Test Object', created: DateTime.now());
 
         // Test edge cases
         final edgeCaseIds = [
@@ -215,9 +167,7 @@ void main() {
         ];
 
         for (final edgeId in edgeCaseIds) {
-          final result = await repository.add(
-            IdentifiedObject(edgeId, testUser.copyWith(id: edgeId)),
-          );
+          final result = await repository.add(IdentifiedObject(edgeId, testObject.copyWith(id: edgeId)));
           expect(result.id, equals(edgeId));
 
           // Clean up
