@@ -34,8 +34,13 @@ class IntegrationTestHelpers {
         id: record.id,
         name: record.data['name'] as String,
         created: DateTime.parse(record.data['created'] as String),
+        expires: DateTime.parse(record.data['expires'] as String),
       ),
-      toPocketBase: (testObject) => {'name': testObject.name, 'created': testObject.created.toIso8601String()},
+      toPocketBase: (testObject) => {
+        'name': testObject.name,
+        'created': testObject.created.toIso8601String(),
+        'expires': testObject.expires.toIso8601String(),
+      },
       queryBuilder: TestObjectQueryBuilder(),
     );
   }

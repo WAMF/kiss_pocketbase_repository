@@ -75,7 +75,7 @@ void main() {
       test('should reject invalid IDs when adding items', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testObject = TestObject.create(name: 'Test Object', created: DateTime.now());
+        final testObject = TestObject.create(name: 'Test Object');
 
         // Test various invalid ID formats
         final invalidIds = [
@@ -102,7 +102,7 @@ void main() {
       test('should accept valid IDs when adding items', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testObject = TestObject.create(name: 'Test Object', created: DateTime.now());
+        final testObject = TestObject.create(name: 'Test Object');
 
         // Test valid ID formats
         final validIds = [
@@ -127,9 +127,9 @@ void main() {
         final repository = IntegrationTestHelpers.repository;
 
         final testObjects = [
-          TestObject.create(name: 'Object 1', created: DateTime.now()),
-          TestObject.create(name: 'Object 2', created: DateTime.now()),
-          TestObject.create(name: 'Object 3', created: DateTime.now()),
+          TestObject.create(name: 'Object 1'),
+          TestObject.create(name: 'Object 2'),
+          TestObject.create(name: 'Object 3'),
         ];
 
         // Mix of valid and invalid IDs
@@ -156,7 +156,7 @@ void main() {
       test('should handle edge cases in ID validation', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testObject = TestObject.create(name: 'Test Object', created: DateTime.now());
+        final testObject = TestObject.create(name: 'Test Object');
 
         // Test edge cases
         final edgeCaseIds = [

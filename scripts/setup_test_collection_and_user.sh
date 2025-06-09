@@ -61,6 +61,11 @@ cat > /tmp/test_objects_collection.json <<EOF
       "required": true
     },
     {
+      "name": "expires",
+      "type": "date",
+      "required": true
+    },
+    {
       "name": "created",
       "type": "autodate",
       "onCreate": true,
