@@ -158,6 +158,10 @@ class RepositoryPocketBase<T> extends Repository<T> {
     }
   }
 
+  /// Creates a real-time stream of changes for a specific document.
+  ///
+  /// **Initial Emission**: Immediately emits existing data when subscribed (BehaviorSubject-like).
+  /// **Deletion Behavior**: PocketBase sends delete events. Stream closes on deletion.
   @override
   Stream<T> stream(String id) {
     PocketBaseUtils.validateId(id);
@@ -168,8 +172,25 @@ class RepositoryPocketBase<T> extends Repository<T> {
     controller = StreamController<T>(
       onListen: () async {
         try {
+          // First, get and emit initial data BEFORE setting up real-time subscription
+          try {
+            final initialData = await get(id);
+            controller.add(initialData);
+          } catch (e) {
+            // Emit error for non-existent records to be consistent with get() behavior
+            controller.addError(e);
+          }
+
+          // Then set up real-time subscription for subsequent changes
           await client.collection(collection).subscribe(id, (event) {
             try {
+              // Check if this is a delete event
+              if (event.action == 'delete') {
+                // Record was deleted, close the stream
+                controller.close();
+                return;
+              }
+
               final record = event.record;
               if (record != null) {
                 final domainObject = fromPocketBase(record);
@@ -180,14 +201,6 @@ class RepositoryPocketBase<T> extends Repository<T> {
             }
           });
           isSubscribed = true;
-
-          try {
-            final initialData = await get(id);
-            controller.add(initialData);
-          } catch (e) {
-            // If record doesn't exist initially, that's ok - we'll get it when created
-            // Don't emit error, just wait for real-time events
-          }
         } catch (e) {
           controller.addError(RepositoryException(message: 'Failed to establish stream subscription: $e'));
         }
@@ -215,6 +228,15 @@ class RepositoryPocketBase<T> extends Repository<T> {
     controller = StreamController<List<T>>(
       onListen: () async {
         try {
+          // First, get and emit initial data BEFORE setting up real-time subscription
+          try {
+            final initialData = await this.query(query: query);
+            controller.add(initialData);
+          } catch (e) {
+            controller.addError(RepositoryException(message: 'Failed to get initial stream query data: $e'));
+          }
+
+          // Then set up real-time subscription for subsequent changes
           await client.collection(collection).subscribe('*', (event) async {
             try {
               final results = await this.query(query: query);
@@ -224,13 +246,6 @@ class RepositoryPocketBase<T> extends Repository<T> {
             }
           });
           isSubscribed = true;
-
-          try {
-            final initialData = await this.query(query: query);
-            controller.add(initialData);
-          } catch (e) {
-            controller.addError(RepositoryException(message: 'Failed to get initial stream query data: $e'));
-          }
         } catch (e) {
           controller.addError(RepositoryException(message: 'Failed to establish stream query subscription: $e'));
         }
