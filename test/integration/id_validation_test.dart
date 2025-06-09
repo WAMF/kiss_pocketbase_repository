@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
 
 import 'test_helpers.dart';
-import '../../../kiss_repository/test/data/test_object.dart';
+import '../../../kiss_repository/shared_test_logic/data/test_object.dart';
 
 void main() {
   group('PocketBase ID Validation', () {

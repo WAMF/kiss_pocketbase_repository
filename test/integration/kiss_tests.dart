@@ -1,11 +1,7 @@
 import 'package:test/test.dart';
 
 import 'test_helpers.dart';
-import '../../../kiss_repository/test/integration/basic_crud_integration_test.dart';
-import '../../../kiss_repository/test/integration/basic_batch_integration_test.dart';
-import '../../../kiss_repository/test/integration/basic_query_integration_test.dart';
-import '../../../kiss_repository/test/integration/basic_streaming_integration_test.dart';
-import '../../../kiss_repository/test/integration/basic_error_integration_test.dart';
+import '../../../kiss_repository/test/integration/kiss_dart_tests.dart';
 
 void main() {
   setUpAll(() async {

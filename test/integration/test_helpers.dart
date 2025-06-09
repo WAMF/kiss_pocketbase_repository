@@ -1,8 +1,8 @@
 import 'package:pocketbase/pocketbase.dart';
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
 
-import '../../../kiss_repository/test/data/test_object.dart';
-import '../../../kiss_repository/test/data/queries.dart';
+import '../../../kiss_repository/shared_test_logic/data/test_object.dart';
+import '../../../kiss_repository/shared_test_logic/data/queries.dart';
 
 class IntegrationTestHelpers {
   static late PocketBase pocketbaseClient;
