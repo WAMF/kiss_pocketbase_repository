@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
 
 import 'test_helpers.dart';
-import '../../../kiss_repository/shared_test_logic/data/test_object.dart';
+import '../../../kiss_repository/shared_test_logic/data/product_model.dart';
 
 void main() {
   group('PocketBase ID Validation', () {
@@ -75,7 +75,7 @@ void main() {
       test('should reject invalid IDs when adding items', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testObject = TestObject.create(name: 'Test Object');
+        final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
         // Test various invalid ID formats
         final invalidIds = [
@@ -92,7 +92,7 @@ void main() {
 
         for (final invalidId in invalidIds) {
           expect(
-            () => repository.add(IdentifiedObject(invalidId, testObject.copyWith(id: invalidId))),
+            () => repository.add(IdentifiedObject(invalidId, productModel.copyWith(id: invalidId))),
             throwsA(isA<RepositoryException>()),
             reason: 'Should reject invalid ID: "$invalidId"',
           );
@@ -102,7 +102,7 @@ void main() {
       test('should accept valid IDs when adding items', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testObject = TestObject.create(name: 'Test Object');
+        final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
         // Test valid ID formats
         final validIds = [
@@ -114,9 +114,9 @@ void main() {
         ];
 
         for (final validId in validIds) {
-          final result = await repository.add(IdentifiedObject(validId, testObject.copyWith(id: validId)));
+          final result = await repository.add(IdentifiedObject(validId, productModel.copyWith(id: validId)));
           expect(result.id, equals(validId));
-          expect(result.name, equals('Test Object'));
+          expect(result.name, equals('Sample Product'));
 
           // Clean up for next iteration
           await repository.delete(validId);
@@ -126,22 +126,22 @@ void main() {
       test('should validate IDs in batch operations', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testObjects = [
-          TestObject.create(name: 'Object 1'),
-          TestObject.create(name: 'Object 2'),
-          TestObject.create(name: 'Object 3'),
+        final productModels = [
+          ProductModel.create(name: 'Product 1', price: 9.99),
+          ProductModel.create(name: 'Product 2', price: 9.99),
+          ProductModel.create(name: 'Product 3', price: 9.99),
         ];
 
         // Mix of valid and invalid IDs
         final identifiedObjects = [
           IdentifiedObject(
             PocketBaseUtils.generateId(),
-            testObjects[0].copyWith(id: PocketBaseUtils.generateId()),
+            productModels[0].copyWith(id: PocketBaseUtils.generateId()),
           ), // valid
-          IdentifiedObject('invalid_id', testObjects[1].copyWith(id: 'invalid_id')), // invalid
+          IdentifiedObject('invalid_id', productModels[1].copyWith(id: 'invalid_id')), // invalid
           IdentifiedObject(
             PocketBaseUtils.generateId(),
-            testObjects[2].copyWith(id: PocketBaseUtils.generateId()),
+            productModels[2].copyWith(id: PocketBaseUtils.generateId()),
           ), // valid
         ];
 
@@ -156,7 +156,7 @@ void main() {
       test('should handle edge cases in ID validation', () async {
         final repository = IntegrationTestHelpers.repository;
 
-        final testObject = TestObject.create(name: 'Test Object');
+        final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
         // Test edge cases
         final edgeCaseIds = [
@@ -167,7 +167,7 @@ void main() {
         ];
 
         for (final edgeId in edgeCaseIds) {
-          final result = await repository.add(IdentifiedObject(edgeId, testObject.copyWith(id: edgeId)));
+          final result = await repository.add(IdentifiedObject(edgeId, productModel.copyWith(id: edgeId)));
           expect(result.id, equals(edgeId));
 
           // Clean up

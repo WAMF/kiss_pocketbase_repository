@@ -1,13 +1,13 @@
 import 'package:pocketbase/pocketbase.dart';
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
 
-import '../../../kiss_repository/shared_test_logic/data/test_object.dart';
+import '../../../kiss_repository/shared_test_logic/data/product_model.dart';
 import '../../../kiss_repository/shared_test_logic/data/queries.dart';
 
 class IntegrationTestHelpers {
   static late PocketBase pocketbaseClient;
-  static late RepositoryPocketBase<TestObject> repository;
-  static const String testCollection = 'test_objects';
+  static late RepositoryPocketBase<ProductModel> repository;
+  static const String testCollection = 'products';
   static const String pocketbaseUrl = 'http://localhost:8090';
 
   static const String testUserEmail = 'testuser@example.com';
@@ -27,21 +27,23 @@ class IntegrationTestHelpers {
       );
     }
 
-    repository = RepositoryPocketBase<TestObject>(
+    repository = RepositoryPocketBase<ProductModel>(
       client: pocketbaseClient,
       collection: testCollection,
-      fromPocketBase: (record) => TestObject(
+      fromPocketBase: (record) => ProductModel(
         id: record.id,
         name: record.data['name'] as String,
+        price: (record.data['price'] as num).toDouble(),
+        description: record.data['description'] as String? ?? '',
         created: DateTime.parse(record.data['created'] as String),
-        expires: DateTime.parse(record.data['expires'] as String),
       ),
-      toPocketBase: (testObject) => {
-        'name': testObject.name,
-        'created': testObject.created.toIso8601String(),
-        'expires': testObject.expires.toIso8601String(),
+      toPocketBase: (productModel) => {
+        'name': productModel.name,
+        'price': productModel.price,
+        'description': productModel.description,
+        'created': productModel.created.toIso8601String(),
       },
-      queryBuilder: TestObjectQueryBuilder(),
+      queryBuilder: ProductModelQueryBuilder(),
     );
   }
 

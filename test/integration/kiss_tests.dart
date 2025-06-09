@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 
-import 'test_helpers.dart';
 import '../../../kiss_repository/test/integration/kiss_dart_tests.dart';
+import 'test_helpers.dart';
 
 void main() {
   setUpAll(() async {
@@ -31,7 +31,7 @@ void main() {
   group('Streaming Tests', () {
     runDartStreamingTests(() => IntegrationTestHelpers.repository);
   });
-  
+
   group('ID Management Tests', () {
     runDartIdTests(() => IntegrationTestHelpers.repository);
   });

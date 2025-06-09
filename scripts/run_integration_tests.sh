@@ -183,11 +183,11 @@ fi
 
 print_success "Admin token obtained"
 
-# Create test_objects collection
-print_status "Creating test_objects collection..."
-cat > /tmp/test_objects_collection.json <<EOF
+# Create products collection
+print_status "Creating products collection..."
+cat > /tmp/products_collection.json <<EOF
 {
-  "name": "test_objects",
+  "name": "products",
   "type": "base",
   "fields": [
     {
@@ -219,12 +219,12 @@ EOF
 COLLECTION_RESPONSE=$(curl -s -X POST "$PB_URL/api/collections" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -d @/tmp/test_objects_collection.json)
+  -d @/tmp/products_collection.json)
 
 if echo "$COLLECTION_RESPONSE" | grep -q '"id"'; then
-    print_success "test_objects collection created"
+    print_success "products collection created"
 else
-    print_error "Failed to create test_objects collection"
+    print_error "Failed to create products collection"
     if [ "$VERBOSE" = "true" ]; then
         echo "Response: $COLLECTION_RESPONSE"
     fi
@@ -232,7 +232,7 @@ else
 fi
 
 # Clean up temp file
-rm -f /tmp/test_objects_collection.json
+rm -f /tmp/products_collection.json
 
 # Create test user
 print_status "Creating test user..."

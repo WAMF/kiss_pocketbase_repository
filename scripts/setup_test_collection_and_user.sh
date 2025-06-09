@@ -48,11 +48,11 @@ fi
 
 echo "✅ Admin token obtained"
 
-# 📝 Create test_objects collection via API (base type for test data)
-echo "Creating test_objects collection..."
-cat > /tmp/test_objects_collection.json <<EOF
+# 📝 Create products collection via API (base type for test data)
+echo "Creating products collection..."
+cat > /tmp/products_collection.json <<EOF
 {
-  "name": "test_objects",
+  "name": "products",
   "type": "base",
   "fields": [
     {
@@ -61,9 +61,14 @@ cat > /tmp/test_objects_collection.json <<EOF
       "required": true
     },
     {
-      "name": "expires",
-      "type": "date",
+      "name": "price",
+      "type": "number",
       "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false
     },
     {
       "name": "created",
@@ -89,12 +94,12 @@ EOF
 COLLECTION_RESPONSE=$(curl -s -X POST http://127.0.0.1:8090/api/collections \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -d @/tmp/test_objects_collection.json)
+  -d @/tmp/products_collection.json)
 
 echo "Collection creation response: $COLLECTION_RESPONSE"
 
 if echo "$COLLECTION_RESPONSE" | grep -q '"id"'; then
-  echo "✅ test_objects collection created"
+  echo "✅ products collection created"
 else
   echo "❌ Failed to create collection"
   echo "Full response: $COLLECTION_RESPONSE"
@@ -103,7 +108,7 @@ else
 fi
 
 # Clean up temp file
-rm -f /tmp/test_objects_collection.json
+rm -f /tmp/products_collection.json
 
 # 👥 Create test user in the users collection (for authentication)
 echo "Creating test user in users collection..."

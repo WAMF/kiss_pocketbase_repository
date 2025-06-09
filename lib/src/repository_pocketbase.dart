@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:pocketbase/pocketbase.dart';
 import 'package:kiss_repository/kiss_repository.dart';
+import 'package:pocketbase/pocketbase.dart';
 
 import 'utils/pocketbase_utils.dart';
 
@@ -82,13 +82,13 @@ class RepositoryPocketBase<T> extends Repository<T> {
       final record = await client.collection(collection).create(body: data);
       return fromPocketBase(record);
     } on ClientException catch (e) {
-      if (e.statusCode == 400 && e.response?['data'] != null) {
-        final errors = e.response!['data'] as Map;
+      if (e.statusCode == 400 && e.response['data'] != null) {
+        final errors = e.response['data'] as Map;
         if (errors.containsKey('id')) {
           throw RepositoryException.alreadyExists(item.id);
         }
       }
-      throw RepositoryException(message: 'Failed to add record: ${e.response ?? e.toString()}');
+      throw RepositoryException(message: 'Failed to add record: ${e.response}');
     } catch (e) {
       throw RepositoryException(message: 'Failed to add record: $e');
     }
@@ -152,7 +152,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
 
       return records.map((record) => fromPocketBase(record)).toList();
     } on ClientException catch (e) {
-      throw RepositoryException(message: 'Failed to query records: ${e.response ?? e.toString()}');
+      throw RepositoryException(message: 'Failed to query records: ${e.response}');
     } catch (e) {
       throw RepositoryException(message: 'Failed to query records: $e');
     }
@@ -177,16 +177,13 @@ class RepositoryPocketBase<T> extends Repository<T> {
             final initialData = await get(id);
             controller.add(initialData);
           } catch (e) {
-            // Emit error for non-existent records to be consistent with get() behavior
             controller.addError(e);
           }
 
-          // Then set up real-time subscription for subsequent changes
           await client.collection(collection).subscribe(id, (event) {
             try {
-              // Check if this is a delete event
               if (event.action == 'delete') {
-                // Record was deleted, close the stream
+                // If this is a delete event, close the stream
                 controller.close();
                 return;
               }
@@ -236,7 +233,6 @@ class RepositoryPocketBase<T> extends Repository<T> {
             controller.addError(RepositoryException(message: 'Failed to get initial stream query data: $e'));
           }
 
-          // Then set up real-time subscription for subsequent changes
           await client.collection(collection).subscribe('*', (event) async {
             try {
               final results = await this.query(query: query);
@@ -354,8 +350,8 @@ class RepositoryPocketBase<T> extends Repository<T> {
       // Otherwise, convert the record back to T (which should include the ID)
       return fromPocketBase(record);
     } on ClientException catch (e) {
-      if (e.statusCode == 400 && e.response?['data'] != null) {
-        final errors = e.response!['data'] as Map;
+      if (e.statusCode == 400 && e.response['data'] != null) {
+        final errors = e.response['data'] as Map;
         if (errors.containsKey('id')) {
           throw RepositoryException.alreadyExists('auto-generated');
         }
