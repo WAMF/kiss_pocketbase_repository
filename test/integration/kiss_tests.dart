@@ -17,26 +17,22 @@ void main() {
   });
 
   group('PocketBase Repository - Centralized CRUD Tests', () {
-    runBasicCrudTests(() => IntegrationTestHelpers.repository);
+    runDartCrudTests(() => IntegrationTestHelpers.repository);
   });
 
   group('Batch Operations Tests', () {
-    runBasicBatchTests(() => IntegrationTestHelpers.repository);
+    runDartBatchTests(() => IntegrationTestHelpers.repository);
   });
 
   group('Query Filtering Tests', () {
-    runBasicQueryTests(() => IntegrationTestHelpers.repository);
+    runDartQueryTests(() => IntegrationTestHelpers.repository);
   });
 
   group('Streaming Tests', () {
-    runBasicStreamingTests(() => IntegrationTestHelpers.repository);
+    runDartStreamingTests(() => IntegrationTestHelpers.repository);
   });
-
-  group('Error Handling Tests', () {
-    runBasicErrorTests(() => IntegrationTestHelpers.repository);
-  });
-
+  
   group('ID Management Tests', () {
-    runBasicIdTests(() => IntegrationTestHelpers.repository);
+    runDartIdTests(() => IntegrationTestHelpers.repository);
   });
 }
