@@ -8,8 +8,7 @@ environment:
 
 dependencies:
   pocketbase: ^0.22.0
-  kiss_repository:
-    path: ../kiss_repository
+  kiss_repository: ^0.9.0
 
 dev_dependencies:
   test: ^1.24.0
