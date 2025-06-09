@@ -35,4 +35,8 @@ void main() {
   group('Error Handling Tests', () {
     runBasicErrorTests(() => IntegrationTestHelpers.repository);
   });
+
+  group('ID Management Tests', () {
+    runBasicIdTests(() => IntegrationTestHelpers.repository);
+  });
 }
