@@ -38,6 +38,7 @@ class IntegrationTestHelpers {
         created: DateTime.parse(record.data['created'] as String),
       ),
       toPocketBase: (productModel) => {
+        'id': productModel.id,
         'name': productModel.name,
         'price': productModel.price,
         'description': productModel.description,

@@ -18,10 +18,10 @@ void main() {
       await IntegrationTestHelpers.clearTestCollection();
     });
 
-    group('PocketBaseUtils', () {
+    group('PocketBaseIdentifiedObject', () {
       test('should generate valid PocketBase IDs', () {
-        final id1 = PocketBaseUtils.generateId();
-        final id2 = PocketBaseUtils.generateId();
+        final id1 = PocketBaseIdentifiedObject.generateId();
+        final id2 = PocketBaseIdentifiedObject.generateId();
 
         // Should be exactly 15 characters
         expect(id1.length, equals(15));
@@ -35,39 +35,39 @@ void main() {
         expect(RegExp(r'^[a-z0-9]+$').hasMatch(id2), isTrue);
 
         // Should be valid according to our validator
-        expect(PocketBaseUtils.isValidId(id1), isTrue);
-        expect(PocketBaseUtils.isValidId(id2), isTrue);
+        expect(PocketBaseIdentifiedObject.isValidId(id1), isTrue);
+        expect(PocketBaseIdentifiedObject.isValidId(id2), isTrue);
       });
 
       test('should validate ID format correctly', () {
         // Valid IDs
-        expect(PocketBaseUtils.isValidId('abc123def456789'), isTrue);
-        expect(PocketBaseUtils.isValidId('123456789012345'), isTrue);
-        expect(PocketBaseUtils.isValidId('abcdefghijklmno'), isTrue);
+        expect(PocketBaseIdentifiedObject.isValidId('abc123def456789'), isTrue);
+        expect(PocketBaseIdentifiedObject.isValidId('123456789012345'), isTrue);
+        expect(PocketBaseIdentifiedObject.isValidId('abcdefghijklmno'), isTrue);
 
         // Invalid IDs - wrong length
-        expect(PocketBaseUtils.isValidId(''), isFalse);
-        expect(PocketBaseUtils.isValidId('short'), isFalse);
-        expect(PocketBaseUtils.isValidId('abc123def45678'), isFalse); // 14 chars
-        expect(PocketBaseUtils.isValidId('abc123def4567890'), isFalse); // 16 chars
+        expect(PocketBaseIdentifiedObject.isValidId(''), isFalse);
+        expect(PocketBaseIdentifiedObject.isValidId('short'), isFalse);
+        expect(PocketBaseIdentifiedObject.isValidId('abc123def45678'), isFalse); // 14 chars
+        expect(PocketBaseIdentifiedObject.isValidId('abc123def4567890'), isFalse); // 16 chars
 
         // Invalid IDs - wrong characters
-        expect(PocketBaseUtils.isValidId('ABC123def456789'), isFalse); // uppercase
-        expect(PocketBaseUtils.isValidId('abc123def456789!'), isFalse); // special char
-        expect(PocketBaseUtils.isValidId('abc123def456789_'), isFalse); // underscore
-        expect(PocketBaseUtils.isValidId('abc123def456789-'), isFalse); // hyphen
-        expect(PocketBaseUtils.isValidId('abc123def456 789'), isFalse); // space
+        expect(PocketBaseIdentifiedObject.isValidId('ABC123def456789'), isFalse); // uppercase
+        expect(PocketBaseIdentifiedObject.isValidId('abc123def456789!'), isFalse); // special char
+        expect(PocketBaseIdentifiedObject.isValidId('abc123def456789_'), isFalse); // underscore
+        expect(PocketBaseIdentifiedObject.isValidId('abc123def456789-'), isFalse); // hyphen
+        expect(PocketBaseIdentifiedObject.isValidId('abc123def456 789'), isFalse); // space
       });
 
       test('should throw exception for invalid IDs', () {
-        expect(() => PocketBaseUtils.validateId('invalid'), throwsA(isA<RepositoryException>()));
+        expect(() => PocketBaseIdentifiedObject.validateId('invalid'), throwsA(isA<RepositoryException>()));
 
-        expect(() => PocketBaseUtils.validateId('ABC123def456789'), throwsA(isA<RepositoryException>()));
+        expect(() => PocketBaseIdentifiedObject.validateId('ABC123def456789'), throwsA(isA<RepositoryException>()));
 
-        expect(() => PocketBaseUtils.validateId('abc123def456789!'), throwsA(isA<RepositoryException>()));
+        expect(() => PocketBaseIdentifiedObject.validateId('abc123def456789!'), throwsA(isA<RepositoryException>()));
 
         // Should not throw for valid IDs
-        expect(() => PocketBaseUtils.validateId('abc123def456789'), returnsNormally);
+        expect(() => PocketBaseIdentifiedObject.validateId('abc123def456789'), returnsNormally);
       });
     });
 
@@ -109,8 +109,8 @@ void main() {
           'abc123def456789',
           '123456789012345',
           'abcdefghijklmno',
-          PocketBaseUtils.generateId(),
-          PocketBaseUtils.generateId(),
+          PocketBaseIdentifiedObject.generateId(),
+          PocketBaseIdentifiedObject.generateId(),
         ];
 
         for (final validId in validIds) {
@@ -135,13 +135,13 @@ void main() {
         // Mix of valid and invalid IDs
         final identifiedObjects = [
           IdentifiedObject(
-            PocketBaseUtils.generateId(),
-            productModels[0].copyWith(id: PocketBaseUtils.generateId()),
+            PocketBaseIdentifiedObject.generateId(),
+            productModels[0].copyWith(id: PocketBaseIdentifiedObject.generateId()),
           ), // valid
           IdentifiedObject('invalid_id', productModels[1].copyWith(id: 'invalid_id')), // invalid
           IdentifiedObject(
-            PocketBaseUtils.generateId(),
-            productModels[2].copyWith(id: PocketBaseUtils.generateId()),
+            PocketBaseIdentifiedObject.generateId(),
+            productModels[2].copyWith(id: PocketBaseIdentifiedObject.generateId()),
           ), // valid
         ];
 

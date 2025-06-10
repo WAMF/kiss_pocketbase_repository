@@ -1,9 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:kiss_repository/kiss_repository.dart';
 import 'package:pocketbase/pocketbase.dart';
-
-import 'utils/pocketbase_utils.dart';
 
 /// Special IdentifiedObject subclass that generates PocketBase IDs on-demand
 class PocketBaseIdentifiedObject<T> extends IdentifiedObject<T> {
@@ -28,9 +27,32 @@ class PocketBaseIdentifiedObject<T> extends IdentifiedObject<T> {
     return _cachedUpdatedObject!;
   }
 
-  /// Generates a real PocketBase ID using PocketBaseUtils
+  /// Generates a real PocketBase ID directly within the object
   String _generatePocketBaseId() {
-    return PocketBaseUtils.generateId();
+    return PocketBaseIdentifiedObject.generateId();
+  }
+
+  static String generateId() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    final random = Random();
+    return List.generate(15, (index) => chars[random.nextInt(chars.length)]).join();
+  }
+
+  static bool isValidId(String id) {
+    if (id.length != 15) return false;
+    final validChars = RegExp(r'^[a-z0-9]+$');
+    return validChars.hasMatch(id);
+  }
+
+  static void validateId(String id) {
+    if (!isValidId(id)) {
+      throw RepositoryException(
+        message:
+            'Invalid PocketBase ID format. ID must be exactly 15 characters '
+            'and contain only lowercase alphanumeric characters (a-z0-9). '
+            'Got: "$id" (length: ${id.length})',
+      );
+    }
   }
 
   /// Convenience factory method for creating objects with auto-generated IDs
@@ -73,11 +95,10 @@ class RepositoryPocketBase<T> extends Repository<T> {
 
   @override
   Future<T> add(IdentifiedObject<T> item) async {
-    PocketBaseUtils.validateId(item.id);
+    PocketBaseIdentifiedObject.validateId(item.id);
 
     try {
       final data = toPocketBase(item.object);
-      data['id'] = item.id;
 
       final record = await client.collection(collection).create(body: data);
       return fromPocketBase(record);
@@ -164,7 +185,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
   /// **Deletion Behavior**: PocketBase sends delete events. Stream closes on deletion.
   @override
   Stream<T> stream(String id) {
-    PocketBaseUtils.validateId(id);
+    PocketBaseIdentifiedObject.validateId(id);
 
     late StreamController<T> controller;
     bool isSubscribed = false;
@@ -337,28 +358,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
 
   @override
   Future<T> addAutoIdentified(T object, {T Function(T object, String id)? updateObjectWithId}) async {
-    try {
-      final data = toPocketBase(object);
-
-      final record = await client.collection(collection).create(body: data);
-
-      // If updateObjectWithId is provided, use it to update the object with the generated ID
-      if (updateObjectWithId != null) {
-        return updateObjectWithId(object, record.id);
-      }
-
-      // Otherwise, convert the record back to T (which should include the ID)
-      return fromPocketBase(record);
-    } on ClientException catch (e) {
-      if (e.statusCode == 400 && e.response['data'] != null) {
-        final errors = e.response['data'] as Map;
-        if (errors.containsKey('id')) {
-          throw RepositoryException.alreadyExists('auto-generated');
-        }
-      }
-      throw RepositoryException(message: 'Failed to add record: ${e.response}');
-    } catch (e) {
-      throw RepositoryException(message: 'Failed to add record: $e');
-    }
+    final autoIdentifiedObject = autoIdentify(object, updateObjectWithId: updateObjectWithId);
+    return add(autoIdentifiedObject);
   }
 }
