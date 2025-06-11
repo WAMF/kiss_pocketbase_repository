@@ -48,11 +48,11 @@ fi
 
 echo "✅ Admin token obtained"
 
-# 📝 Create test_users collection via API (base type for test data)
-echo "Creating test_users collection..."
-cat > /tmp/test_users_collection.json <<EOF
+# 📝 Create products collection via API (base type for test data)
+echo "Creating products collection..."
+cat > /tmp/products_collection.json <<EOF
 {
-  "name": "test_users",
+  "name": "products",
   "type": "base",
   "fields": [
     {
@@ -61,15 +61,26 @@ cat > /tmp/test_users_collection.json <<EOF
       "required": true
     },
     {
-      "name": "age",
+      "name": "price",
       "type": "number",
       "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false
     },
     {
       "name": "created",
       "type": "autodate",
       "onCreate": true,
       "onUpdate": false
+    },
+    {
+      "name": "updated",
+      "type": "autodate",
+      "onCreate": true,
+      "onUpdate": true
     }
   ],
   "listRule": "@request.auth.id != \"\"",
@@ -83,12 +94,12 @@ EOF
 COLLECTION_RESPONSE=$(curl -s -X POST http://127.0.0.1:8090/api/collections \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -d @/tmp/test_users_collection.json)
+  -d @/tmp/products_collection.json)
 
 echo "Collection creation response: $COLLECTION_RESPONSE"
 
 if echo "$COLLECTION_RESPONSE" | grep -q '"id"'; then
-  echo "✅ test_users collection created"
+  echo "✅ products collection created"
 else
   echo "❌ Failed to create collection"
   echo "Full response: $COLLECTION_RESPONSE"
@@ -97,7 +108,7 @@ else
 fi
 
 # Clean up temp file
-rm -f /tmp/test_users_collection.json
+rm -f /tmp/products_collection.json
 
 # 👥 Create test user in the users collection (for authentication)
 echo "Creating test user in users collection..."

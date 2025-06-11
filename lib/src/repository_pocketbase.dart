@@ -1,9 +1,64 @@
 import 'dart:async';
+import 'dart:math';
 
-import 'package:pocketbase/pocketbase.dart';
 import 'package:kiss_repository/kiss_repository.dart';
+import 'package:pocketbase/pocketbase.dart';
 
-import 'utils/pocketbase_utils.dart';
+/// Special IdentifiedObject subclass that generates PocketBase IDs on-demand
+class PocketBaseIdentifiedObject<T> extends IdentifiedObject<T> {
+  PocketBaseIdentifiedObject(T object, this._updateObjectWithId) : super('', object);
+
+  final T Function(T object, String id) _updateObjectWithId;
+  String? _cachedId;
+  T? _cachedUpdatedObject;
+
+  @override
+  String get id {
+    _cachedId ??= _generatePocketBaseId();
+    return _cachedId!;
+  }
+
+  @override
+  T get object {
+    if (_cachedUpdatedObject == null) {
+      final generatedId = id; // This will generate and cache the ID if needed
+      _cachedUpdatedObject = _updateObjectWithId(super.object, generatedId);
+    }
+    return _cachedUpdatedObject!;
+  }
+
+  /// Generates a real PocketBase ID directly within the object
+  String _generatePocketBaseId() {
+    return PocketBaseIdentifiedObject.generateId();
+  }
+
+  static String generateId() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    final random = Random();
+    return List.generate(15, (index) => chars[random.nextInt(chars.length)]).join();
+  }
+
+  static bool isValidId(String id) {
+    if (id.length != 15) return false;
+    final validChars = RegExp(r'^[a-z0-9]+$');
+    return validChars.hasMatch(id);
+  }
+
+  static void validateId(String id) {
+    if (!isValidId(id)) {
+      throw RepositoryException(
+        message:
+            'Invalid PocketBase ID format. ID must be exactly 15 characters '
+            'and contain only lowercase alphanumeric characters (a-z0-9). '
+            'Got: "$id" (length: ${id.length})',
+      );
+    }
+  }
+
+  /// Convenience factory method for creating objects with auto-generated IDs
+  factory PocketBaseIdentifiedObject.create(T object, T Function(T object, String id) updateObjectWithId) =>
+      PocketBaseIdentifiedObject(object, updateObjectWithId);
+}
 
 class RepositoryPocketBase<T> extends Repository<T> {
   RepositoryPocketBase({
@@ -40,7 +95,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
 
   @override
   Future<T> add(IdentifiedObject<T> item) async {
-    PocketBaseUtils.validateId(item.id);
+    PocketBaseIdentifiedObject.validateId(item.id);
 
     try {
       final data = toPocketBase(item.object);
@@ -48,15 +103,13 @@ class RepositoryPocketBase<T> extends Repository<T> {
       final record = await client.collection(collection).create(body: data);
       return fromPocketBase(record);
     } on ClientException catch (e) {
-      if (e.statusCode == 400 && e.response?['data'] != null) {
-        final errors = e.response!['data'] as Map;
+      if (e.statusCode == 400 && e.response['data'] != null) {
+        final errors = e.response['data'] as Map;
         if (errors.containsKey('id')) {
           throw RepositoryException.alreadyExists(item.id);
         }
       }
-      throw RepositoryException(
-        message: 'Failed to add record: ${e.response ?? e.toString()}',
-      );
+      throw RepositoryException(message: 'Failed to add record: ${e.response}');
     } catch (e) {
       throw RepositoryException(message: 'Failed to add record: $e');
     }
@@ -71,17 +124,13 @@ class RepositoryPocketBase<T> extends Repository<T> {
       final updated = updater(current);
       final data = toPocketBase(updated);
 
-      final updatedRecord = await client
-          .collection(collection)
-          .update(id, body: data);
+      final updatedRecord = await client.collection(collection).update(id, body: data);
       return fromPocketBase(updatedRecord);
     } on ClientException catch (e) {
       if (e.statusCode == 404) {
         throw RepositoryException.notFound(id);
       }
-      throw RepositoryException(
-        message: 'Failed to update record: ${e.response}',
-      );
+      throw RepositoryException(message: 'Failed to update record: ${e.response}');
     } catch (e) {
       throw RepositoryException(message: 'Failed to update record: $e');
     }
@@ -96,9 +145,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
         // Silently succeed for non-existent records
         return;
       }
-      throw RepositoryException(
-        message: 'Failed to delete record: ${e.response}',
-      );
+      throw RepositoryException(message: 'Failed to delete record: ${e.response}');
     } catch (e) {
       throw RepositoryException(message: 'Failed to delete record: $e');
     }
@@ -122,23 +169,23 @@ class RepositoryPocketBase<T> extends Repository<T> {
         );
       }
 
-      final records = await client
-          .collection(collection)
-          .getFullList(filter: filter, sort: sort ?? '-created');
+      final records = await client.collection(collection).getFullList(filter: filter, sort: sort ?? '-created');
 
       return records.map((record) => fromPocketBase(record)).toList();
     } on ClientException catch (e) {
-      throw RepositoryException(
-        message: 'Failed to query records: ${e.response ?? e.toString()}',
-      );
+      throw RepositoryException(message: 'Failed to query records: ${e.response}');
     } catch (e) {
       throw RepositoryException(message: 'Failed to query records: $e');
     }
   }
 
+  /// Creates a real-time stream of changes for a specific document.
+  ///
+  /// **Initial Emission**: Immediately emits existing data when subscribed (BehaviorSubject-like).
+  /// **Deletion Behavior**: PocketBase sends delete events. Stream closes on deletion.
   @override
   Stream<T> stream(String id) {
-    PocketBaseUtils.validateId(id);
+    PocketBaseIdentifiedObject.validateId(id);
 
     late StreamController<T> controller;
     bool isSubscribed = false;
@@ -146,36 +193,34 @@ class RepositoryPocketBase<T> extends Repository<T> {
     controller = StreamController<T>(
       onListen: () async {
         try {
+          // First, get and emit initial data BEFORE setting up real-time subscription
+          try {
+            final initialData = await get(id);
+            controller.add(initialData);
+          } catch (e) {
+            controller.addError(e);
+          }
+
           await client.collection(collection).subscribe(id, (event) {
             try {
+              if (event.action == 'delete') {
+                // If this is a delete event, close the stream
+                controller.close();
+                return;
+              }
+
               final record = event.record;
               if (record != null) {
                 final domainObject = fromPocketBase(record);
                 controller.add(domainObject);
               }
             } catch (e) {
-              controller.addError(
-                RepositoryException(
-                  message: 'Failed to process stream event: $e',
-                ),
-              );
+              controller.addError(RepositoryException(message: 'Failed to process stream event: $e'));
             }
           });
           isSubscribed = true;
-
-          try {
-            final initialData = await get(id);
-            controller.add(initialData);
-          } catch (e) {
-            // If record doesn't exist initially, that's ok - we'll get it when created
-            // Don't emit error, just wait for real-time events
-          }
         } catch (e) {
-          controller.addError(
-            RepositoryException(
-              message: 'Failed to establish stream subscription: $e',
-            ),
-          );
+          controller.addError(RepositoryException(message: 'Failed to establish stream subscription: $e'));
         }
       },
       onCancel: () async {
@@ -201,36 +246,25 @@ class RepositoryPocketBase<T> extends Repository<T> {
     controller = StreamController<List<T>>(
       onListen: () async {
         try {
+          // First, get and emit initial data BEFORE setting up real-time subscription
+          try {
+            final initialData = await this.query(query: query);
+            controller.add(initialData);
+          } catch (e) {
+            controller.addError(RepositoryException(message: 'Failed to get initial stream query data: $e'));
+          }
+
           await client.collection(collection).subscribe('*', (event) async {
             try {
               final results = await this.query(query: query);
               controller.add(results);
             } catch (e) {
-              controller.addError(
-                RepositoryException(
-                  message: 'Failed to process stream query event: $e',
-                ),
-              );
+              controller.addError(RepositoryException(message: 'Failed to process stream query event: $e'));
             }
           });
           isSubscribed = true;
-
-          try {
-            final initialData = await this.query(query: query);
-            controller.add(initialData);
-          } catch (e) {
-            controller.addError(
-              RepositoryException(
-                message: 'Failed to get initial stream query data: $e',
-              ),
-            );
-          }
         } catch (e) {
-          controller.addError(
-            RepositoryException(
-              message: 'Failed to establish stream query subscription: $e',
-            ),
-          );
+          controller.addError(RepositoryException(message: 'Failed to establish stream query subscription: $e'));
         }
       },
       onCancel: () async {
@@ -238,9 +272,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
           try {
             await client.collection(collection).unsubscribe('*');
           } catch (e) {
-            print(
-              'Warning: Failed to unsubscribe from PocketBase stream query: $e',
-            );
+            print('Warning: Failed to unsubscribe from PocketBase stream query: $e');
           }
         }
       },
@@ -265,8 +297,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
 
     if (exceptions.isNotEmpty) {
       throw RepositoryException(
-        message:
-            'Batch add failed for ${exceptions.length} items: ${exceptions.keys.join(', ')}',
+        message: 'Batch add failed for ${exceptions.length} items: ${exceptions.keys.join(', ')}',
       );
     }
 
@@ -289,8 +320,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
 
     if (exceptions.isNotEmpty) {
       throw RepositoryException(
-        message:
-            'Batch update failed for ${exceptions.length} items: ${exceptions.keys.join(', ')}',
+        message: 'Batch update failed for ${exceptions.length} items: ${exceptions.keys.join(', ')}',
       );
     }
 
@@ -311,8 +341,7 @@ class RepositoryPocketBase<T> extends Repository<T> {
 
     if (exceptions.isNotEmpty) {
       throw RepositoryException(
-        message:
-            'Batch delete failed for ${exceptions.length} items: ${exceptions.keys.join(', ')}',
+        message: 'Batch delete failed for ${exceptions.length} items: ${exceptions.keys.join(', ')}',
       );
     }
   }
@@ -323,41 +352,13 @@ class RepositoryPocketBase<T> extends Repository<T> {
   }
 
   @override
-  IdentifiedObject<T> autoIdentify(
-    T object, {
-    T Function(T object, String id)? updateObjectWithId,
-  }) {
-    // PocketBase auto-generates IDs, so we use empty string as placeholder
-    return IdentifiedObject('', object);
+  IdentifiedObject<T> autoIdentify(T object, {T Function(T object, String id)? updateObjectWithId}) {
+    return PocketBaseIdentifiedObject(object, updateObjectWithId ?? (object, id) => object);
   }
 
   @override
-  Future<T> addAutoIdentified(
-    T object, {
-    T Function(T object, String id)? updateObjectWithId,
-  }) async {
-    try {
-      final data = toPocketBase(object);
-
-      final record = await client.collection(collection).create(body: data);
-
-      // If updateObjectWithId is provided, use it to update the object with the generated ID
-      if (updateObjectWithId != null) {
-        return updateObjectWithId(object, record.id);
-      }
-
-      // Otherwise, convert the record back to T (which should include the ID)
-      return fromPocketBase(record);
-    } on ClientException catch (e) {
-      if (e.statusCode == 400 && e.response?['data'] != null) {
-        final errors = e.response!['data'] as Map;
-        if (errors.containsKey('id')) {
-          throw RepositoryException.alreadyExists('auto-generated');
-        }
-      }
-      throw RepositoryException(message: 'Failed to add record: ${e.response}');
-    } catch (e) {
-      throw RepositoryException(message: 'Failed to add record: $e');
-    }
+  Future<T> addAutoIdentified(T object, {T Function(T object, String id)? updateObjectWithId}) async {
+    final autoIdentifiedObject = autoIdentify(object, updateObjectWithId: updateObjectWithId);
+    return add(autoIdentifiedObject);
   }
 }
