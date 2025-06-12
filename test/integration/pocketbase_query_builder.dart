@@ -9,7 +9,8 @@ class TestPocketBaseProductQueryBuilder implements QueryBuilder<String> {
   String build(Query query) {
     if (query is QueryByName) {
       // PocketBase uses ~ operator for "contains/like" matching
-      return 'name ~ "${query.namePrefix}"';
+      final escaped = _escapePocketBaseFilterString(query.namePrefix);
+      return 'name ~ "$escaped"';
     }
 
     if (query is QueryByCreatedAfter) {
@@ -28,6 +29,10 @@ class TestPocketBaseProductQueryBuilder implements QueryBuilder<String> {
       return 'price < ${query.price}';
     }
 
-    return '';
+    throw UnsupportedError('ProductModelQueryBuilder: unsupported query type \\${query.runtimeType}');
   }
+}
+
+String _escapePocketBaseFilterString(String input) {
+  return input.replaceAll(r'\', r'\\').replaceAll('"', r'\"');
 }
