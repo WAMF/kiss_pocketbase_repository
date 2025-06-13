@@ -9,7 +9,9 @@ environment:
 dependencies:
   pocketbase: ^0.22.0
   kiss_repository:
-    path: ../kiss_repository
+    git:
+      url: https://github.com/WAMF/kiss_repository.git
+      ref: 365a5fffc43746b1a4887e2a8321754df0b3e0d0
 
 dev_dependencies:
   test: ^1.24.0

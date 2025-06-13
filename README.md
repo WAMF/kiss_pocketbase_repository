@@ -100,17 +100,33 @@ final newUser = await userRepository.add(
 ### PocketBase Local Setup
 
 ```bash
-# Download PocketBase binary
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.20.0/pocketbase_0.20.0_darwin_amd64.zip
-unzip pocketbase_0.20.0_darwin_amd64.zip
+# For development (clean PocketBase)
+./scripts/start_emulator.sh
 
-# Start PocketBase
-./pocketbase serve
+# For testing (with test collections and users)
+./scripts/start_emulator.sh --test
 ```
 
 PocketBase runs on:
 - **API**: `http://localhost:8090`
 - **Admin Dashboard**: `http://localhost:8090/_/`
+
+### Running Tests
+
+```bash
+# Integration tests (handles test setup automatically)
+./scripts/run_tests.sh
+```
+
+### Manual Development
+
+```bash
+# Start clean PocketBase (in one terminal)
+./scripts/start_emulator.sh
+
+# Run example app (in another terminal)
+flutter run
+```
 
 ### Collection Setup
 
@@ -122,20 +138,10 @@ PocketBase runs on:
 
 **Option 2: Programmatically (API)**
 ```bash
-# Use the setup script for automated collection creation
-./scripts/setup_test_collection_and_user.sh
+# Automated collection creation (included in start_emulator.sh)
+./scripts/start_emulator.sh
 ```
-Collections can be created via API calls using JSON definitions (see `scripts/setup_test_collection_and_user.sh` for examples).
-
-### Running Tests
-
-```bash
-# Unit tests
-dart test
-
-# Integration tests (requires PocketBase running)
-dart test test/integration/
-```
+Collections can be created via API calls using JSON definitions.
 
 ## 📖 Usage
 
