@@ -34,7 +34,7 @@ class PocketBaseIdentifiedObject<T> extends IdentifiedObject<T> {
 
   static String generateId() {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    final random = Random();
+    final random = Random.secure();
     return List.generate(15, (index) => chars[random.nextInt(chars.length)]).join();
   }
 
