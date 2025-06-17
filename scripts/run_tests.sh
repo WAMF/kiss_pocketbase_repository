@@ -132,4 +132,4 @@ else
     print_error "Some integration tests failed (exit code: $TEST_EXIT_CODE)"
 fi
 
-exit $TEST_EXIT_CODE 
+exit $TEST_EXIT_CODE
