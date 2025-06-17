@@ -56,18 +56,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Configure directories based on mode
+PB_DIR="pb_data"
 if [ "$TEST_MODE" = "true" ]; then
-    PB_DIR="test_pb_data"
     print_info "Starting PocketBase in TEST mode"
 else
-    PB_DIR="pb_data"
     print_info "Starting PocketBase in DEVELOPMENT mode"
 fi
 
 # Clean previous data
 if [ "$TEST_MODE" = "true" ]; then
     print_info "Cleaning previous test data..."
-    rm -rf test_pb_data
+    rm -rf pb_data
     rm -rf pb_migrations
 fi
 

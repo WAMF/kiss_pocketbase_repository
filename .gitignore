@@ -32,4 +32,4 @@ build/
 
 # Pocketbase
 pb_migrations/
-test_pb_data/
+pb_data/
