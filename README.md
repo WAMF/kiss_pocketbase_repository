@@ -106,11 +106,8 @@ final newUser = await userRepository.add(
 ### PocketBase Local Setup
 
 ```bash
-# For development (clean PocketBase)
+# Start PocketBase with test collections and users
 ./scripts/start_emulator.sh
-
-# For testing (with test collections and users)
-./scripts/start_emulator.sh --test
 ```
 
 PocketBase runs on:
@@ -127,7 +124,7 @@ PocketBase runs on:
 ### Manual Development
 
 ```bash
-# Start clean PocketBase (in one terminal)
+# Start PocketBase with test setup (in one terminal)
 ./scripts/start_emulator.sh
 
 # Run example app (in another terminal)

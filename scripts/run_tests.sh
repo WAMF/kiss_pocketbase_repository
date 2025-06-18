@@ -65,7 +65,7 @@ while [[ $# -gt 0 ]]; do
             echo "  id_validation_test.dart"
             echo ""
             echo "This script will automatically:"
-            echo "  1. Start PocketBase with test collections"
+            echo "  1. Check PocketBase is running (start with ./scripts/start_emulator.sh)"
             echo "  2. Run the specified tests"
             echo "  3. Clean up test data (unless --no-cleanup)"
             exit 0
@@ -95,7 +95,7 @@ fi
 # Check if PocketBase emulator is running
 if ! curl -s "http://127.0.0.1:8090/api/health" > /dev/null 2>&1; then
     print_error "PocketBase emulator is not running!"
-    print_status "Start it first with: ./scripts/start_emulator.sh --test"
+    print_status "Start it first with: ./scripts/start_emulator.sh"
     print_status "   (or run it in another terminal)"
     exit 1
 fi
