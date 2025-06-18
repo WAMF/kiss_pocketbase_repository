@@ -7,7 +7,6 @@ void main() {
   late PocketBaseRepositoryFactory factory;
 
   setUpAll(() async {
-    // Initialize the factory
     await PocketBaseRepositoryFactory.initialize();
     factory = PocketBaseRepositoryFactory();
   });

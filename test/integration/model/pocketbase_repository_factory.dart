@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
 import 'package:kiss_repository/testing.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -6,11 +8,13 @@ import 'pocketbase_query_builder.dart';
 
 class PocketBaseRepositoryFactory implements RepositoryFactory {
   static late PocketBase _pocketbaseClient;
+  static bool _initialized = false;
+
+  Repository<ProductModel>? _repository;
+
   static const String _testCollection = 'products';
   static const String _testUserEmail = 'testuser@example.com';
   static const String _testUserPassword = 'testuser123';
-  static bool _initialized = false;
-  Repository<ProductModel>? _repository;
 
   static Future<void> initialize() async {
     if (_initialized) return;
@@ -66,14 +70,12 @@ class PocketBaseRepositoryFactory implements RepositoryFactory {
 
   @override
   Future<void> cleanup() async {
-    // Only cleanup if repository was created
     if (_repository == null) {
       print('🧹 Cleanup: No repository to clean');
       return;
     }
 
     try {
-      // Use direct PocketBase client for cleanup (like the working code)
       final records = await _pocketbaseClient.collection(_testCollection).getFullList();
       print('🧹 Cleanup: Found ${records.length} items to delete');
 
@@ -87,7 +89,6 @@ class PocketBaseRepositoryFactory implements RepositoryFactory {
       }
     } catch (e) {
       print('❌ Cleanup failed: $e');
-      // Don't throw - we don't want cleanup failures to break tests
     }
   }
 

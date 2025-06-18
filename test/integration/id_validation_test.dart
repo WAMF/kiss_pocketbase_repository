@@ -8,7 +8,6 @@ void main() {
 
   group('PocketBase ID Validation', () {
     setUpAll(() async {
-      // Initialize the factory
       await PocketBaseRepositoryFactory.initialize();
       factory = PocketBaseRepositoryFactory();
     });
