@@ -1,21 +1,24 @@
 import 'package:test/test.dart';
+import 'package:kiss_repository/testing.dart';
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
-
-import 'test_helpers.dart';
-import '../../../kiss_repository/shared_test_logic/data/product_model.dart';
+import 'model/pocketbase_repository_factory.dart';
 
 void main() {
+  late PocketBaseRepositoryFactory factory;
+
   group('PocketBase ID Validation', () {
     setUpAll(() async {
-      await IntegrationTestHelpers.setupIntegrationTests();
+      // Initialize the factory
+      await PocketBaseRepositoryFactory.initialize();
+      factory = PocketBaseRepositoryFactory();
     });
 
     tearDownAll(() async {
-      await IntegrationTestHelpers.tearDownIntegrationTests();
+      factory.dispose();
     });
 
     setUp(() async {
-      await IntegrationTestHelpers.clearTestCollection();
+      await factory.cleanup();
     });
 
     group('PocketBaseIdentifiedObject', () {
@@ -73,7 +76,7 @@ void main() {
 
     group('Repository ID Validation', () {
       test('should reject invalid IDs when adding items', () async {
-        final repository = IntegrationTestHelpers.repository;
+        final repository = factory.createRepository();
 
         final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
@@ -100,7 +103,7 @@ void main() {
       });
 
       test('should accept valid IDs when adding items', () async {
-        final repository = IntegrationTestHelpers.repository;
+        final repository = factory.createRepository();
 
         final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
@@ -124,7 +127,7 @@ void main() {
       });
 
       test('should validate IDs in batch operations', () async {
-        final repository = IntegrationTestHelpers.repository;
+        final repository = factory.createRepository();
 
         final productModels = [
           ProductModel.create(name: 'Product 1', price: 9.99),
@@ -154,7 +157,7 @@ void main() {
       });
 
       test('should handle edge cases in ID validation', () async {
-        final repository = IntegrationTestHelpers.repository;
+        final repository = factory.createRepository();
 
         final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 

@@ -1,6 +1,5 @@
 import 'package:kiss_repository/kiss_repository.dart';
-
-import '../../../kiss_repository/shared_test_logic/data/queries.dart';
+import 'package:kiss_repository/testing.dart';
 
 /// PocketBase-specific query builder for ProductModel
 /// Uses PocketBase filter syntax: https://pocketbase.io/docs/api-rules-and-filters/
