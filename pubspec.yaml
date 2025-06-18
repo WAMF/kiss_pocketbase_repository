@@ -7,13 +7,10 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
+  kiss_repository: ^0.10.0
   pocketbase: ^0.22.0
-  kiss_repository:
-    git:
-      url: https://github.com/WAMF/kiss_repository.git
-      ref: 365a5fffc43746b1a4887e2a8321754df0b3e0d0
-
+      
 dev_dependencies:
   test: ^1.24.0
-  lints: ^5.0.0
+  very_good_analysis: ^6.0.0
 
