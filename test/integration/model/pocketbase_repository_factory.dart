@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
-import 'package:kiss_repository/test.dart';
+import 'package:kiss_repository_tests/test.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 import 'pocketbase_query_builder.dart';

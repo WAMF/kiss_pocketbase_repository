@@ -1,5 +1,5 @@
 import 'package:kiss_pocketbase_repository/kiss_pocketbase_repository.dart';
-import 'package:kiss_repository/test.dart';
+import 'package:kiss_repository_tests/test.dart';
 import 'package:test/test.dart';
 
 import 'model/pocketbase_repository_factory.dart';
