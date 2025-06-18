@@ -31,7 +31,7 @@ class IntegrationTestHelpers {
       client: pocketbaseClient,
       collection: testCollection,
       fromPocketBase: (record) => ProductModel(
-        id: record.id,
+        id: record.data['id'] as String? ?? '',
         name: record.data['name'] as String,
         price: (record.data['price'] as num).toDouble(),
         description: record.data['description'] as String? ?? '',
