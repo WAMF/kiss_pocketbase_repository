@@ -1,4 +1,4 @@
-import 'package:kiss_repository/testing.dart';
+import 'package:kiss_repository/test.dart';
 import 'package:test/test.dart';
 
 import 'model/pocketbase_repository_factory.dart';
