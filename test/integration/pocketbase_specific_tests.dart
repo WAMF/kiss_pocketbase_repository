@@ -1,7 +1,7 @@
 import 'package:kiss_repository_tests/test.dart';
 import 'package:test/test.dart';
 
-import 'model/pocketbase_repository_factory.dart';
+import 'factories/pocketbase_repository_factory.dart';
 
 void main() {
   late PocketBaseRepositoryFactory factory;

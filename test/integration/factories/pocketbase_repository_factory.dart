@@ -51,7 +51,7 @@ class PocketBaseRepositoryFactory implements RepositoryFactory {
       collection: _testCollection,
       queryBuilder: TestPocketBaseProductQueryBuilder(),
       fromPocketBase: (record) => ProductModel(
-        id: record.data['id'] as String? ?? '',
+        id: record.id,
         name: record.data['name'] as String,
         price: (record.data['price'] as num).toDouble(),
         description: record.data['description'] as String? ?? '',
