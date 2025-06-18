@@ -35,6 +35,12 @@ This package implements the `kiss_repository` interface for PocketBase, providin
 - PocketBase binary for local development
 - Basic understanding of PocketBase collections and auth
 
+#### Installing PocketBase
+
+```bash
+brew install pocketbase
+```
+
 ### Installation
 
 Add this to your package's `pubspec.yaml` file:
