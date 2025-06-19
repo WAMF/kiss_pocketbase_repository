@@ -6,7 +6,7 @@ import 'package:pocketbase/pocketbase.dart';
 
 import 'pocketbase_query_builder.dart';
 
-class PocketBaseRepositoryFactory implements RepositoryFactory {
+class PocketBaseRepositoryFactory implements RepositoryFactory<ProductModel> {
   static late PocketBase _pocketbaseClient;
   static bool _initialized = false;
 
