@@ -1,4 +1,4 @@
-import 'package:kiss_repository_tests/test.dart';
+import 'package:kiss_repository_tests/kiss_repository_tests.dart';
 import 'package:test/test.dart';
 
 import 'factories/pocketbase_repository_factory.dart';
@@ -8,9 +8,9 @@ void main() {
     await PocketBaseRepositoryFactory.initialize();
   });
 
-  final factory = PocketBaseRepositoryFactory();
-  final tester = RepositoryTester('PocketBase', factory, () {});
-
-  // ignore: cascade_invocations
-  tester.run();
+  runRepositoryTests(
+    implementationName: 'PocketBase',
+    factoryProvider: PocketBaseRepositoryFactory.new,
+    cleanup: () {},
+  );
 }
