@@ -7,10 +7,13 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
-  kiss_repository: ^0.10.0
+  kiss_repository:
+    path: ../kiss_repository
   pocketbase: ^0.22.0
       
 dev_dependencies:
   test: ^1.24.0
   very_good_analysis: ^6.0.0
+  kiss_repository_tests:
+    path: ../kiss_repository_tests
 

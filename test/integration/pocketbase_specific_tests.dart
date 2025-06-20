@@ -1,24 +1,26 @@
+import 'package:kiss_repository_tests/kiss_repository_tests.dart';
 import 'package:test/test.dart';
 
-import '../../../kiss_repository/shared_test_logic/data/product_model.dart';
-import 'test_helpers.dart';
+import 'factories/pocketbase_repository_factory.dart';
 
 void main() {
+  late PocketBaseRepositoryFactory factory;
+
   setUpAll(() async {
-    await IntegrationTestHelpers.setupIntegrationTests();
+    factory = PocketBaseRepositoryFactory();
   });
 
   tearDownAll(() async {
-    await IntegrationTestHelpers.tearDownIntegrationTests();
+    factory.dispose();
   });
 
   setUp(() async {
-    await IntegrationTestHelpers.clearTestCollection();
+    await factory.cleanup();
   });
 
   group('PocketBase-Specific Behavior', () {
     test('addAutoIdentified without updateObjectWithId returns object with server-generated ID', () async {
-      final repository = IntegrationTestHelpers.repository;
+      final repository = await factory.createRepository();
       final productModel = ProductModel.create(name: 'ProductX', price: 9.99);
 
       final addedObject = await repository.addAutoIdentified(productModel);
