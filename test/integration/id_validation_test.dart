@@ -6,11 +6,12 @@ import 'factories/pocketbase_repository_factory.dart';
 
 void main() {
   late PocketBaseRepositoryFactory factory;
+  late Repository<ProductModel> repository;
 
   group('PocketBase ID Validation', () {
     setUpAll(() async {
-      await PocketBaseRepositoryFactory.initialize();
       factory = PocketBaseRepositoryFactory();
+      repository = await factory.createRepository();
     });
 
     tearDownAll(() async {
@@ -76,8 +77,6 @@ void main() {
 
     group('Repository ID Validation', () {
       test('should reject invalid IDs when adding items', () async {
-        final repository = factory.createRepository();
-
         final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
         // Test various invalid ID formats
@@ -103,8 +102,6 @@ void main() {
       });
 
       test('should accept valid IDs when adding items', () async {
-        final repository = factory.createRepository();
-
         final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
         // Test valid ID formats
@@ -127,8 +124,6 @@ void main() {
       });
 
       test('should validate IDs in batch operations', () async {
-        final repository = factory.createRepository();
-
         final productModels = [
           ProductModel.create(name: 'Product 1', price: 9.99),
           ProductModel.create(name: 'Product 2', price: 9.99),
@@ -157,8 +152,6 @@ void main() {
       });
 
       test('should handle edge cases in ID validation', () async {
-        final repository = factory.createRepository();
-
         final productModel = ProductModel.create(name: 'Sample Product', price: 9.99);
 
         // Test edge cases

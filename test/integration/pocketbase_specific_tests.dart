@@ -7,7 +7,6 @@ void main() {
   late PocketBaseRepositoryFactory factory;
 
   setUpAll(() async {
-    await PocketBaseRepositoryFactory.initialize();
     factory = PocketBaseRepositoryFactory();
   });
 
@@ -21,7 +20,7 @@ void main() {
 
   group('PocketBase-Specific Behavior', () {
     test('addAutoIdentified without updateObjectWithId returns object with server-generated ID', () async {
-      final repository = factory.createRepository();
+      final repository = await factory.createRepository();
       final productModel = ProductModel.create(name: 'ProductX', price: 9.99);
 
       final addedObject = await repository.addAutoIdentified(productModel);

@@ -16,35 +16,9 @@ class PocketBaseRepositoryFactory implements RepositoryFactory<ProductModel> {
   static const String _testUserEmail = 'testuser@example.com';
   static const String _testUserPassword = 'testuser123';
 
-  static Future<void> initialize() async {
-    if (_initialized) return;
-
-    _pocketbaseClient = PocketBase('http://127.0.0.1:8090');
-
-    // Test connection
-    try {
-      await _pocketbaseClient.health.check();
-      print('✅ PocketBase connection established');
-    } catch (e) {
-      throw Exception('❌ Failed to connect to PocketBase: $e');
-    }
-
-    // Authenticate with test user
-    try {
-      await _pocketbaseClient.collection('users').authWithPassword(_testUserEmail, _testUserPassword);
-      print('🔐 Authenticated as test user: $_testUserEmail');
-    } catch (e) {
-      throw Exception('❌ Failed to authenticate test user: $e');
-    }
-
-    _initialized = true;
-  }
-
   @override
-  Repository<ProductModel> createRepository() {
-    if (!_initialized) {
-      throw StateError('Factory not initialized. Call initialize() first.');
-    }
+  Future<Repository<ProductModel>> createRepository() async {
+    await _initialize();
 
     _repository = RepositoryPocketBase<ProductModel>(
       client: _pocketbaseClient,
@@ -66,6 +40,30 @@ class PocketBaseRepositoryFactory implements RepositoryFactory<ProductModel> {
       },
     );
     return _repository!;
+  }
+
+  static Future<void> _initialize() async {
+    if (_initialized) return;
+
+    _pocketbaseClient = PocketBase('http://127.0.0.1:8090');
+
+    // Test connection
+    try {
+      await _pocketbaseClient.health.check();
+      print('✅ PocketBase connection established');
+    } catch (e) {
+      throw Exception('❌ Failed to connect to PocketBase: $e');
+    }
+
+    // Authenticate with test user
+    try {
+      await _pocketbaseClient.collection('users').authWithPassword(_testUserEmail, _testUserPassword);
+      print('🔐 Authenticated as test user: $_testUserEmail');
+    } catch (e) {
+      throw Exception('❌ Failed to authenticate test user: $e');
+    }
+
+    _initialized = true;
   }
 
   @override
