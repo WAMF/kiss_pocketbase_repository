@@ -6,10 +6,7 @@ import 'pocketbase_specific_tests.dart' as pocketbase_specific_tests;
 
 void main() {
   group('All PocketBase Integration Tests', () {
-    // KISS Repository Tests using Factory Pattern
-    group('KISS Repository Tests (Factory Pattern)', kiss_tests.main);
-
-    // PocketBase-specific implementation tests
+    group('KISS Repository Tests', kiss_tests.main);
     group('PocketBase-Specific Tests', pocketbase_specific_tests.main);
     group('ID Validation Tests', id_validation_tests.main);
   });

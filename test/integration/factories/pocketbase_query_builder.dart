@@ -12,13 +12,6 @@ class TestPocketBaseProductQueryBuilder implements QueryBuilder<String> {
       return 'name ~ "$escaped"';
     }
 
-    if (query is QueryByCreatedAfter) {
-      return 'created >= "${query.date.toIso8601String()}"';
-    }
-
-    if (query is QueryByCreatedBefore) {
-      return 'created <= "${query.date.toIso8601String()}"';
-    }
 
     if (query is QueryByPriceGreaterThan) {
       return 'price > ${query.price}';
