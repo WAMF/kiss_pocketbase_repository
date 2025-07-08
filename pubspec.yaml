@@ -1,6 +1,6 @@
 name: kiss_pocketbase_repository
 description: "A PocketBase implementation of kiss_repository interface"
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/WAMF/kiss_pocketbase_repository
 
 environment:
