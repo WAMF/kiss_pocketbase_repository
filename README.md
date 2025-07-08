@@ -50,15 +50,6 @@ This package implements the `kiss_repository` interface for PocketBase, providin
 brew install pocketbase
 ```
 
-### Installation
-
-Add this to your package's `pubspec.yaml` file:
-
-```yaml
-dependencies:
-  kiss_pocketbase_repository: ^0.1.0
-```
-
 ### Basic Usage
 
 ```dart
