@@ -12,20 +12,16 @@ class TestPocketBaseProductQueryBuilder implements QueryBuilder<String> {
       return 'name ~ "$escaped"';
     }
 
-    if (query is QueryByCreatedAfter) {
-      return 'created >= "${query.date.toIso8601String()}"';
-    }
 
-    if (query is QueryByCreatedBefore) {
-      return 'created <= "${query.date.toIso8601String()}"';
-    }
-
-    if (query is QueryByPriceGreaterThan) {
-      return 'price > ${query.price}';
-    }
-
-    if (query is QueryByPriceLessThan) {
-      return 'price < ${query.price}';
+    if (query is QueryByPriceRange) {
+      final conditions = <String>[];
+      if (query.minPrice != null) {
+        conditions.add('price >= ${query.minPrice}');
+      }
+      if (query.maxPrice != null) {
+        conditions.add('price <= ${query.maxPrice}');
+      }
+      return conditions.join(' && ');
     }
 
     throw UnsupportedError('ProductModelQueryBuilder: unsupported query type \\${query.runtimeType}');

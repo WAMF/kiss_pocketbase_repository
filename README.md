@@ -16,12 +16,21 @@ This package implements the `kiss_repository` interface for PocketBase, providin
 - ✅ Built-in error handling with typed exceptions
 
 ### 🗄️ PocketBase-Specific Features
-- ✅ Real-time streaming with PocketBase subscriptions
+- ✅ **Real-time streaming** with PocketBase WebSocket subscriptions
+- ✅ **Multi-instance streaming** - Works across multiple server instances/deployments
 - ✅ Auto-generated IDs (custom repository function)
 - ✅ Case-insensitive text search with contains matching
 - ✅ Pure Dart package (works in any Dart environment)
 - ✅ Advanced authentication with auth collections
 - ✅ Self-hosted data control
+
+### 📡 Streaming Architecture
+- ✅ **Server-Side Streaming**: WebSocket-based real-time subscriptions
+- ✅ **Multi-Instance Support**: Changes from any client broadcast to all connected subscribers
+- ✅ **Self-Hosted Control**: Full control over real-time infrastructure and data flow
+- ✅ **Perfect for**: Self-hosted applications with real-time requirements
+- ✅ **Horizontal Scaling**: WebSocket connections work across multiple server instances
+- ✅ **Full Control**: Complete ownership of data and streaming infrastructure
 
 ### ⚠️ Limitations
 - **Collection schemas required**: Must define collections in Admin Dashboard first
@@ -39,15 +48,6 @@ This package implements the `kiss_repository` interface for PocketBase, providin
 
 ```bash
 brew install pocketbase
-```
-
-### Installation
-
-Add this to your package's `pubspec.yaml` file:
-
-```yaml
-dependencies:
-  kiss_pocketbase_repository: ^0.1.0
 ```
 
 ### Basic Usage
