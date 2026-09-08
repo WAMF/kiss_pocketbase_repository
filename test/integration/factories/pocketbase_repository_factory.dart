@@ -23,7 +23,7 @@ class PocketBaseRepositoryFactory implements RepositoryFactory<ProductModel> {
     _repository = RepositoryPocketBase<ProductModel>(
       client: _pocketbaseClient,
       collection: _testCollection,
-      queryBuilder: TestPocketBaseProductQueryBuilder(),
+      queryBuilder: TestPocketBaseProductQueryBuilder(_pocketbaseClient),
       fromPocketBase: (record) => ProductModel(
         id: record.id,
         name: record.data['name'] as String,
